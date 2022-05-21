@@ -6,17 +6,19 @@
 //
 
 import UIKit
+import Alamofire
 
 class DefenseAnnouncementsViewController: UITableViewController {
     
     var announcements: [DefensAnnouncement] = []
+    
     private var spinnerView: UIActivityIndicatorView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        spinnerView = showSpinner(in: tableView)
-        requestReturn()
+        alamofireGetRequest()
+        
     }
 
     // MARK: - Table view data source
@@ -33,8 +35,8 @@ class DefenseAnnouncementsViewController: UITableViewController {
         
         let announcement = announcements[indexPath.row]
 
-        content.text = announcement.full_name
-        content.secondaryText = "\(announcement.academic_degree ?? ""). Дата защиты: \(announcement.protection_date ?? "-")"
+        content.text = announcement.fullName
+        content.secondaryText = "\(announcement.academicDegree ?? ""). Дата защиты: \(announcement.protectionDate ?? "-")"
         
         cell.contentConfiguration = content
 
@@ -44,28 +46,21 @@ class DefenseAnnouncementsViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
     }
-    
-    private func requestReturn() {
-        NetworkManager.shared.fetchRequest { request, announcements in
-            DispatchQueue.main.async {
-                self.spinnerView?.stopAnimating()
-                self.announcements = announcements
-                self.tableView.dataSource = self
-                self.tableView.delegate = self
+
+}
+
+
+extension DefenseAnnouncementsViewController {
+    func alamofireGetRequest() {
+        NetworkManager.shared.fetchDataRequest(url: NetworkManager.shared.link) { result in
+            switch result {
+            case .success(let requests):
+                self.announcements = requests
                 self.tableView.reloadData()
+            case .failure(let error):
+                print(error)
             }
         }
     }
-    
-    private func showSpinner(in view: UIView) -> UIActivityIndicatorView {
-        let activityIndicator = UIActivityIndicatorView(style: .large)
-        activityIndicator.startAnimating()
-        activityIndicator.center = view.center
-        activityIndicator.hidesWhenStopped = true
-        
-        view.addSubview(activityIndicator)
-        
-        return activityIndicator
-    }
-
 }
+

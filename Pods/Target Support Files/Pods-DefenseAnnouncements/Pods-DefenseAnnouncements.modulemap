@@ -1,0 +1,6 @@
+framework module Pods_DefenseAnnouncements {
+  umbrella header "Pods-DefenseAnnouncements-umbrella.h"
+
+  export *
+  module * { export * }
+}
